@@ -1,5 +1,5 @@
 import { useState, createContext, useContext, useEffect, lazy, Suspense } from "react";
-import { HashRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { LazyMotion, domAnimation, m, useMotionValue, useSpring, AnimatePresence } from "framer-motion";
 import { LIGHT, DARK } from "./theme";
 import Navbar from "./components/Navbar";
@@ -250,7 +250,7 @@ export default function App() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.4 }}>
-                <HashRouter>
+                <BrowserRouter>
                   <ScrollToTop />
                   <a href="#main-content" className="skip-link">Skip to main content</a>
                   <div style={{ background: T.bg, minHeight: "100vh", transition: "background 0.3s ease" }}>
@@ -269,7 +269,7 @@ export default function App() {
                     </main>
                     <Footer T={T} />
                   </div>
-                </HashRouter>
+                </BrowserRouter>
               </m.div>
             )}
           </AnimatePresence>

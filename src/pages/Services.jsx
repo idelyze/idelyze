@@ -78,7 +78,7 @@ function ServiceCard({ s, i }) {
       
 
         {/* Features */}
-        <div style={{ padding: "20px 20px" }}>
+        <div style={{ padding: "20px 20px", height: "300px" }}>
           <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: T.muted, marginBottom: 14, ...ss }}>What's included</p>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px 20px", marginBottom: 20 }}>
             {s.features.map(f => (
