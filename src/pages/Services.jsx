@@ -1,8 +1,27 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { m, useInView, useReducedMotion } from "framer-motion";
 import { useTheme } from "../App";
 import { Ic, ss, sd } from "../theme";
 import { Reveal, SectionHead, PageHero, PrimaryBtn, GhostBtn, ease } from "../components/Primitives";
+
+// ─── Responsive hook ──────────────────────────────────────────────────────────
+function useWindowWidth() {
+  const [width, setWidth] = useState(
+    typeof window !== "undefined" ? window.innerWidth : 1200
+  );
+  useEffect(() => {
+    const handler = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, []);
+  return width;
+}
+
+// ─── Breakpoints ──────────────────────────────────────────────────────────────
+// xs  < 480
+// sm  480–639
+// md  640–1023
+// lg  ≥ 1024
 
 const SERVICES = [
   {
@@ -50,11 +69,25 @@ const SERVICES = [
 ];
 
 function ServiceCard({ s, i }) {
-  const { T } = useTheme();
+  const { T }  = useTheme();
+  const width  = useWindowWidth();
   const ref    = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-40px" });
   const [open, setOpen] = useState(false);
   const IcComp = Ic[s.icon];
+
+  const isXs     = width < 480;
+  const isMobile = width < 640;
+
+  // Card header padding: tighter on small screens
+  const hPad = isXs ? "20px 16px 16px" : isMobile ? "24px 20px 18px" : "28px 28px 20px";
+  // Features section padding
+  const fPad = isXs ? "16px 16px" : isMobile ? "18px 18px" : "20px 28px";
+  // CTA strip padding
+  const cPad = isXs ? "0 16px 20px" : isMobile ? "0 20px 22px" : "0 28px 24px";
+
+  // Features grid: single col on xs, 2-col otherwise
+  const featCols = isXs ? "1fr" : "1fr 1fr";
 
   return (
     <m.div ref={ref}
@@ -62,25 +95,25 @@ function ServiceCard({ s, i }) {
       animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.5, delay: i * 0.08, ease }}>
       <div style={{ borderRadius: 18, overflow: "hidden", background: T.surface, border: `1px solid ${T.border}`, boxShadow: T.cardShadow }}>
+
         {/* Header */}
-        <div style={{ padding: "28px 28px 20px", borderBottom: `1px solid ${T.border}` }}>
-          <div style={{ display: "flex", alignItems: "flex-start", gap: 18 }}>
+        <div style={{ padding: hPad, borderBottom: `1px solid ${T.border}` }}>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: isXs ? 14 : 18 }}>
             <div style={{ width: 48, height: 48, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, background: `${s.color}15`, border: `1px solid ${s.color}30` }}>
               {IcComp && <IcComp style={{ width: 20, height: 20, color: s.color }} sw={1.75} />}
             </div>
-            <div style={{ flex: 1 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: s.color, marginBottom: 6, ...ss }}>{s.tag}</p>
-              <h3 style={{ fontSize: 19, fontWeight: 700, letterSpacing: "-0.025em", color: T.primary, marginBottom: 10, ...sd }}>{s.title}</h3>
-              <p style={{ fontSize: 14, lineHeight: 1.7, color: T.secondary, ...ss }}>{s.desc}</p>
+              <h3 style={{ fontSize: isXs ? 16 : isMobile ? 17 : 19, fontWeight: 700, letterSpacing: "-0.025em", color: T.primary, marginBottom: 10, ...sd }}>{s.title}</h3>
+              <p style={{ fontSize: isXs ? 13 : 14, lineHeight: 1.7, color: T.secondary, ...ss }}>{s.desc}</p>
             </div>
           </div>
         </div>
-      
 
         {/* Features */}
-        <div style={{ padding: "20px 20px", height: "300px" }}>
+        <div style={{ padding: fPad }}>
           <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: T.muted, marginBottom: 14, ...ss }}>What's included</p>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px 20px", marginBottom: 20 }}>
+          <div style={{ display: "grid", gridTemplateColumns: featCols, gap: isXs ? "10px 0" : "10px 20px", marginBottom: 20}}>
             {s.features.map(f => (
               <div key={f} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
                 <div style={{ width: 16, height: 16, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2, background: `${s.color}12`, border: `1px solid ${s.color}30` }}>
@@ -106,7 +139,7 @@ function ServiceCard({ s, i }) {
         </div>
 
         {/* CTA strip */}
-        <div style={{ padding: "0 28px 24px" }}>
+        <div style={{ padding: cPad }}>
           <PrimaryBtn T={T} to="/contact" size="md">
             Get a quote for {s.tag} <Ic.ArrowRight style={{ width: 13, height: 13 }} />
           </PrimaryBtn>
@@ -118,33 +151,80 @@ function ServiceCard({ s, i }) {
 
 export default function Services() {
   const { T } = useTheme();
+  const width  = useWindowWidth();
+
+  const isXs     = width < 480;
+  const isSm     = width >= 480 && width < 640;
+  const isMobile = width < 640;
+  const isMd     = width >= 640 && width < 1024;
+  const isLg     = width >= 1024;
+
+  // Page padding
+  const pagePad = isXs ? "0 16px" : isSm ? "0 20px" : "0 24px";
+
+  // Section padding
+  const sectionPad = isXs ? "0 0 64px" : isMd ? "0 0 80px" : "0 0 112px";
+
+  // Grid:
+  //   xs/sm  → 1 col (full width)
+  //   md     → 1 col (cards are too wide for 2-col at 640–1023)
+  //   lg     → 2 col with minmax 520px (original)
+  const gridCols = isLg
+    ? "repeat(auto-fit, minmax(520px, 1fr))"
+    : "1fr";
+
+  // Bottom CTA padding
+  const ctaPad = isXs ? "32px 20px" : isMobile ? "40px 24px" : "48px 32px";
+  const ctaMarginTop = isMobile ? 40 : 64;
+
   return (
     <div style={{ background: T.bg }}>
       <PageHero T={T}
         eyebrow="Our Services"
-        title={<>What we do,<br />done well.</>}
+        title={
+          isXs
+            ? <>What we do, done well.</>
+            : <>What we do,<br />done well.</>
+        }
         sub="From brand identity to full digital systems — a complete studio that handles every layer of your online presence. Every service is delivered with the same care and precision." />
 
-      <section style={{ background: T.bg, padding: "0 0 112px" }}>
-        <div style={{ maxWidth: 1120, margin: "0 auto", padding: "0 24px" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(520px,1fr))", gap: 20 }}>
+      <section style={{ background: T.bg, padding: sectionPad }}>
+        <div style={{ maxWidth: 1120, margin: "0 auto", padding: pagePad }}>
+
+          {/* Service cards grid */}
+          <div style={{ display: "grid", gridTemplateColumns: gridCols, gap: isMobile ? 16 : 20 }}>
             {SERVICES.map((s, i) => <ServiceCard key={s.tag} s={s} i={i} />)}
           </div>
 
           {/* Bottom CTA */}
           <Reveal delay={0.2}>
-            <div style={{ textAlign: "center", marginTop: 64, padding: "48px 32px", borderRadius: 20, background: T.surface, border: `1px solid ${T.border}`, boxShadow: T.shadow }}>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.13em", textTransform: "uppercase", color: T.accent, marginBottom: 14, ...ss }}>Not sure where to start?</p>
-              <h3 style={{ fontSize: "clamp(1.6rem,2.5vw,2.2rem)", fontWeight: 800, letterSpacing: "-0.03em", color: T.primary, marginBottom: 14, ...sd }}>Let's figure it out together.</h3>
-              <p style={{ fontSize: 15, lineHeight: 1.7, color: T.secondary, maxWidth: 480, margin: "0 auto 28px", ...ss }}>
+            <div style={{
+              textAlign: "center",
+              marginTop: ctaMarginTop,
+              padding: ctaPad,
+              borderRadius: 20,
+              background: T.surface,
+              border: `1px solid ${T.border}`,
+              boxShadow: T.shadow,
+            }}>
+              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.13em", textTransform: "uppercase", color: T.accent, marginBottom: 14, ...ss }}>
+                Not sure where to start?
+              </p>
+              <h3 style={{ fontSize: "clamp(1.4rem,2.5vw,2.2rem)", fontWeight: 800, letterSpacing: "-0.03em", color: T.primary, marginBottom: 14, ...sd }}>
+                Let's figure it out together.
+              </h3>
+              <p style={{ fontSize: isXs ? 14 : 15, lineHeight: 1.7, color: T.secondary, maxWidth: 480, margin: "0 auto 28px", ...ss }}>
                 Tell us about your business and goals. We'll recommend exactly what you need — no upselling, no fluff.
               </p>
-              <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "center", gap: 12 }}>
-                <PrimaryBtn T={T} to="/contact" size="lg">Start a Project <Ic.ArrowRight style={{ width: 14, height: 14 }} /></PrimaryBtn>
+              <div style={{ display: "flex", flexWrap: "wrap", flexDirection: isMobile ? "column" : "row", alignItems: "center", justifyContent: "center", gap: 12 }}>
+                <PrimaryBtn T={T} to="/contact" size="lg">
+                  Start a Project <Ic.ArrowRight style={{ width: 14, height: 14 }} />
+                </PrimaryBtn>
                 <GhostBtn T={T} to="/pricing" size="lg">See Pricing</GhostBtn>
               </div>
             </div>
           </Reveal>
+
         </div>
       </section>
     </div>
