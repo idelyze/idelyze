@@ -175,17 +175,31 @@ export default function Careers() {
       <section style={{ background: T.surface, padding: "80px 0" }}>
         <div style={{ maxWidth: 1120, margin: "0 auto", padding: "0 24px" }}>
           <SectionHead T={T} eyebrow="Why Idelyze" title={<>What it's like<br />to work with us.</>} />
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 14 }}>
+
+          {/* ✅ FIX: align-items stretch (default) makes all cells in a row equal height */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 14, alignItems: "stretch" }}>
             {PERKS.map((p, i) => {
               const IcComp = Ic[p.icon];
               return (
-                <Reveal key={p.title} delay={i * 0.07}>
-                  <div style={{ borderRadius: 16, padding: "22px 24px", background: T.bg, border: `1px solid ${T.border}`, boxShadow: T.cardShadow }}>
-                    <div style={{ width: 36, height: 36, borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", background: T.accentDim, border: `1px solid ${T.accentRing}`, marginBottom: 16 }}>
+                <Reveal key={p.title} delay={i * 0.07} style={{ height: "100%" }}>
+                  {/* ✅ FIX: flex column + height 100% so icon stays top, desc fills middle */}
+                  <div style={{
+                    borderRadius: 16,
+                    padding: "22px 24px",
+                    background: T.bg,
+                    border: `1px solid ${T.border}`,
+                    boxShadow: T.cardShadow,
+                    display: "flex",
+                    flexDirection: "column",
+                    height: "100%",
+                    boxSizing: "border-box",
+                  }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", background: T.accentDim, border: `1px solid ${T.accentRing}`, marginBottom: 16, flexShrink: 0 }}>
                       <IcComp style={{ width: 14, height: 14, color: T.accent }} sw={1.75} />
                     </div>
                     <h3 style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-0.02em", color: T.primary, marginBottom: 8, ...sd }}>{p.title}</h3>
-                    <p style={{ fontSize: 13, lineHeight: 1.65, color: T.muted, ...ss }}>{p.desc}</p>
+                    {/* ✅ FIX: flex: 1 fills remaining height so all cards bottom-align */}
+                    <p style={{ fontSize: 13, lineHeight: 1.65, color: T.muted, flex: 1, ...ss }}>{p.desc}</p>
                   </div>
                 </Reveal>
               );

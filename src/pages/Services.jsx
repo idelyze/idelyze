@@ -79,22 +79,25 @@ function ServiceCard({ s, i }) {
   const isXs     = width < 480;
   const isMobile = width < 640;
 
-  // Card header padding: tighter on small screens
   const hPad = isXs ? "20px 16px 16px" : isMobile ? "24px 20px 18px" : "28px 28px 20px";
-  // Features section padding
   const fPad = isXs ? "16px 16px" : isMobile ? "18px 18px" : "20px 28px";
-  // CTA strip padding
   const cPad = isXs ? "0 16px 20px" : isMobile ? "0 20px 22px" : "0 28px 24px";
-
-  // Features grid: single col on xs, 2-col otherwise
   const featCols = isXs ? "1fr" : "1fr 1fr";
 
   return (
     <m.div ref={ref}
       initial={{ opacity: 0, y: 28 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.5, delay: i * 0.08, ease }}>
-      <div style={{ borderRadius: 18, overflow: "hidden", background: T.surface, border: `1px solid ${T.border}`, boxShadow: T.cardShadow }}>
+      transition={{ duration: 0.5, delay: i * 0.08, ease }}
+      style={{ height: "100%" }}>
+
+      {/* ✅ FIX: flex column + height 100% so CTA always pins to bottom */}
+      <div style={{
+        borderRadius: 18, overflow: "hidden",
+        background: T.surface, border: `1px solid ${T.border}`,
+        boxShadow: T.cardShadow,
+        display: "flex", flexDirection: "column", height: "100%",
+      }}>
 
         {/* Header */}
         <div style={{ padding: hPad, borderBottom: `1px solid ${T.border}` }}>
@@ -110,10 +113,10 @@ function ServiceCard({ s, i }) {
           </div>
         </div>
 
-        {/* Features */}
-        <div style={{ padding: fPad }}>
+        {/* ✅ FIX: flex: 1 makes this section grow to fill remaining card height */}
+        <div style={{ padding: fPad, flex: 1 }}>
           <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: T.muted, marginBottom: 14, ...ss }}>What's included</p>
-          <div style={{ display: "grid", gridTemplateColumns: featCols, gap: isXs ? "10px 0" : "10px 20px", marginBottom: 20}}>
+          <div style={{ display: "grid", gridTemplateColumns: featCols, gap: isXs ? "10px 0" : "10px 20px", marginBottom: 20 }}>
             {s.features.map(f => (
               <div key={f} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
                 <div style={{ width: 16, height: 16, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2, background: `${s.color}12`, border: `1px solid ${s.color}30` }}>
@@ -138,12 +141,13 @@ function ServiceCard({ s, i }) {
           )}
         </div>
 
-        {/* CTA strip */}
+        {/* CTA strip — naturally sits at bottom due to flex column */}
         <div style={{ padding: cPad }}>
           <PrimaryBtn T={T} to="/contact" size="md">
             Get a quote for {s.tag} <Ic.ArrowRight style={{ width: 13, height: 13 }} />
           </PrimaryBtn>
         </div>
+
       </div>
     </m.div>
   );
@@ -159,22 +163,10 @@ export default function Services() {
   const isMd     = width >= 640 && width < 1024;
   const isLg     = width >= 1024;
 
-  // Page padding
-  const pagePad = isXs ? "0 16px" : isSm ? "0 20px" : "0 24px";
-
-  // Section padding
+  const pagePad    = isXs ? "0 16px" : isSm ? "0 20px" : "0 24px";
   const sectionPad = isXs ? "0 0 64px" : isMd ? "0 0 80px" : "0 0 112px";
-
-  // Grid:
-  //   xs/sm  → 1 col (full width)
-  //   md     → 1 col (cards are too wide for 2-col at 640–1023)
-  //   lg     → 2 col with minmax 520px (original)
-  const gridCols = isLg
-    ? "repeat(auto-fit, minmax(520px, 1fr))"
-    : "1fr";
-
-  // Bottom CTA padding
-  const ctaPad = isXs ? "32px 20px" : isMobile ? "40px 24px" : "48px 32px";
+  const gridCols   = isLg ? "repeat(auto-fit, minmax(520px, 1fr))" : "1fr";
+  const ctaPad     = isXs ? "32px 20px" : isMobile ? "40px 24px" : "48px 32px";
   const ctaMarginTop = isMobile ? 40 : 64;
 
   return (
@@ -191,7 +183,7 @@ export default function Services() {
       <section style={{ background: T.bg, padding: sectionPad }}>
         <div style={{ maxWidth: 1120, margin: "0 auto", padding: pagePad }}>
 
-          {/* Service cards grid */}
+          {/* ✅ align-items: stretch (default) + cards are full height → rows align perfectly */}
           <div style={{ display: "grid", gridTemplateColumns: gridCols, gap: isMobile ? 16 : 20 }}>
             {SERVICES.map((s, i) => <ServiceCard key={s.tag} s={s} i={i} />)}
           </div>

@@ -32,103 +32,63 @@ const SERVICES_PREVIEW = [
   { icon: "Zap",      tag: "Digital Systems", title: "Systems designed to scale"       },
 ];
 
-/* ─── CUSTOM CURSOR ──────────────────────────────────────────────────────────── */
-function CustomCursor({ T }) {
-  const mx = useMotionValue(-100), my = useMotionValue(-100);
-  const sx = useSpring(mx, { stiffness: 500, damping: 40 });
-  const sy = useSpring(my, { stiffness: 500, damping: 40 });
-  const tx = useSpring(mx, { stiffness: 120, damping: 22 });
-  const ty = useSpring(my, { stiffness: 120, damping: 22 });
-  const [hov, setHov] = useRef(false);
-
-  const [hovState, setHovState] = [hov, v => { hov.current = v; setHov({ ...hov }); }];
-  const [hidden, setHidden] = useRef(false);
-
-  // Simple state for re-render
-  const [s, setS] = useRef({ hov: false, hidden: false });
-
-  import("react").then(({ useState }) => {});
-
-  return null; // Simplified for multi-page — cursor handled by CSS
-}
-
-/* ─── DASHBOARD MOCKUP ────────────────────────────────────────────────────────── */
-function DashboardMockup({ T, dark }) {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true });
+// ─── MARQUEE ─────────────────────────────────────────────────────────────────
+// Duplicates the logo list 4× so the seamless loop works regardless of
+// container width. We animate exactly -50% of the track (= 2 copies),
+// so the repeat always starts from the same visual position.
+function LogoMarquee({ T }) {
+  // 4 copies → animate -50% = shift by exactly 2 copies → seamless
+  const items = [...LOGOS, ...LOGOS, ...LOGOS, ...LOGOS];
 
   return (
-    <m.div ref={ref}
-      initial={{ opacity: 0, y: 44, scale: 0.97 }}
-      animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
-      transition={{ duration: 0.8, delay: 0.1, ease }}
-      style={{ position: "relative", maxWidth: 920, margin: "0 auto" }}>
-      <div style={{ position: "absolute", bottom: -32, left: "50%", transform: "translateX(-50%)", width: "55%", height: 80, background: "#E71C18", borderRadius: "50%", filter: "blur(50px)", opacity: dark ? 0.14 : 0.07 }} />
-      <div style={{ position: "relative", borderRadius: 18, overflow: "hidden", background: T.surface, border: `1px solid ${T.border}`, boxShadow: T.shadow }}>
-        {/* Chrome */}
-        <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "12px 16px", borderBottom: `1px solid ${T.border}`, background: dark ? "rgba(255,255,255,0.012)" : "rgba(0,0,0,0.02)" }}>
-          {["rgba(255,95,86,0.7)","rgba(255,189,46,0.5)","rgba(40,200,64,0.4)"].map((c,i) => (
-            <div key={i} style={{ width: 10, height: 10, borderRadius: "50%", background: c }} />
-          ))}
-          <div style={{ marginLeft: 12, height: 18, width: 200, borderRadius: 5, display: "flex", alignItems: "center", padding: "0 10px", background: T.overlay, border: `1px solid ${T.border}` }}>
-            <span style={{ color: T.ghost, fontSize: 9.5, ...ss }}>idelyze.com/dashboard</span>
+    <div style={{
+      overflow: "hidden",
+      position: "relative",
+      padding: "4px 0",
+    }}>
+      {/* Left fade */}
+      <div style={{
+        position: "absolute", left: 0, top: 0, bottom: 0, width: 100, zIndex: 1, pointerEvents: "none",
+        background: `linear-gradient(to right, ${T.bg}, transparent)`,
+      }} />
+      {/* Right fade */}
+      <div style={{
+        position: "absolute", right: 0, top: 0, bottom: 0, width: 100, zIndex: 1, pointerEvents: "none",
+        background: `linear-gradient(to left, ${T.bg}, transparent)`,
+      }} />
+
+      {/* ✅ FIX: width max-content keeps percentage calc honest;
+               -50% of 4 copies = exactly 2 copies = seamless loop */}
+      <m.div
+        animate={{ x: ["0%", "-50%"] }}
+        transition={{ duration: 30, repeat: Infinity, ease: "linear", repeatType: "loop" }}
+        style={{
+          display: "flex",
+          width: "max-content",
+          alignItems: "center",
+          gap: 0,
+        }}
+      >
+        {items.map((label, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
+            <span style={{
+              fontSize: 11, fontWeight: 700, letterSpacing: "0.18em",
+              textTransform: "uppercase", color: T.ghost,
+              padding: "0 40px",
+              ...ss,
+            }}>
+              {label}
+            </span>
+            {/* Separator dot */}
+            <span style={{
+              width: 4, height: 4, borderRadius: "50%",
+              background: T.border, flexShrink: 0,
+              display: "inline-block",
+            }} />
           </div>
-        </div>
-        {/* Body */}
-        <div style={{ display: "flex", minHeight: 260 }}>
-          <div style={{ width: 148, flexShrink: 0, padding: 12, display: "flex", flexDirection: "column", gap: 3, borderRight: `1px solid ${T.border}` }}>
-            {[["Overview",true],["Projects",false],["Clients",false],["Analytics",false]].map(([label, active]) => (
-              <div key={label} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: 7, fontSize: 11.5, fontWeight: 500, background: active ? T.accentDim : "transparent", color: active ? T.accent : T.muted, border: active ? `1px solid ${T.accentRing}` : "1px solid transparent", ...ss }}>
-                <div style={{ width: 6, height: 6, borderRadius: "50%", flexShrink: 0, background: active ? T.accent : T.border }} />
-                {label}
-              </div>
-            ))}
-            <div style={{ marginTop: "auto", paddingTop: 16, borderTop: `1px solid ${T.border}` }}>
-              <div style={{ fontSize: 9.5, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: T.muted, marginBottom: 6, ...ss }}>Brand Score</div>
-              <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.04em", color: T.green, lineHeight: 1, marginBottom: 8, ...sd }}>98.4</div>
-              <div style={{ width: "100%", height: 4, borderRadius: 2, background: dark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)" }}>
-                <m.div initial={{ width: 0 }} animate={inView ? { width: "98.4%" } : {}} transition={{ duration: 1.5, delay: 0.8, ease: "easeOut" }}
-                  style={{ height: "100%", borderRadius: 2, background: T.green }} />
-              </div>
-            </div>
-          </div>
-          <div style={{ flex: 1, padding: 20, minWidth: 0, overflow: "hidden" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10, marginBottom: 16 }}>
-              {[{ l:"Delivered", v:"20+", d:"All time" },{ l:"In Progress", v:"4", d:"This month" },{ l:"Satisfaction", v:"100%", d:"On brief" }].map(s => (
-                <div key={s.l} style={{ borderRadius: 10, padding: "12px 14px", background: T.overlay, border: `1px solid ${T.border}` }}>
-                  <div style={{ fontSize: 9.5, color: T.muted, marginBottom: 5, ...ss }}>{s.l}</div>
-                  <div style={{ fontSize: 17, fontWeight: 700, letterSpacing: "-0.03em", color: T.primary, marginBottom: 3, ...sd }}>{s.v}</div>
-                  <div style={{ fontSize: 9.5, color: T.accent, ...ss }}>{s.d}</div>
-                </div>
-              ))}
-            </div>
-            <div style={{ borderRadius: 10, padding: 16, marginBottom: 12, background: T.overlay, border: `1px solid ${T.border}` }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: T.secondary, marginBottom: 12, ...ss }}>Project delivery</div>
-              <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 52 }}>
-                {[35,50,40,68,52,78,58,85,65,90,72,88].map((h,i) => (
-                  <m.div key={i} initial={{ height: 0, opacity: 0 }} animate={inView ? { height: `${h}%`, opacity: 1 } : {}} transition={{ delay: 0.4 + i * 0.04, duration: 0.45, ease: "easeOut" }}
-                    style={{ flex: 1, borderRadius: 3, minWidth: 0, background: i >= 9 ? T.accent : T.accentDim }} />
-                ))}
-              </div>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-              {[{ n:"Shop24Hours Website", s:"Delivered", t:"2d ago" },{ n:"Ubika Preschool Rebrand", s:"In review", t:"5d ago" },{ n:"Siyansh Exim Brand", s:"Delivered", t:"2w ago" }].map(item => (
-                <div key={item.n} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "7px 10px", borderRadius: 8, background: T.overlay, border: `1px solid ${T.border}` }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <div style={{ width: 18, height: 18, borderRadius: 4, background: T.accentDim, border: `1px solid ${T.accentRing}`, flexShrink: 0 }} />
-                    <span style={{ fontSize: 11, fontWeight: 500, color: T.secondary, ...ss }}>{item.n}</span>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
-                    <span style={{ fontSize: 10, color: T.muted, ...ss }}>{item.t}</span>
-                    <span style={{ fontSize: 10, fontWeight: 500, padding: "2px 7px", borderRadius: 20, background: item.s === "Delivered" ? (dark ? "rgba(16,185,129,0.12)" : "rgba(5,150,105,0.08)") : T.accentDim, color: item.s === "Delivered" ? T.green : T.accent, border: `1px solid ${item.s === "Delivered" ? (dark ? "rgba(16,185,129,0.25)" : "rgba(5,150,105,0.2)") : T.accentRing}`, ...ss }}>{item.s}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </m.div>
+        ))}
+      </m.div>
+    </div>
   );
 }
 
@@ -187,21 +147,21 @@ export default function Home() {
               ))}
             </m.div>
           </div>
-          <DashboardMockup T={T} dark={dark} />
         </div>
       </section>
 
       {/* ── LOGOS ── */}
-      <div style={{ background: T.bg, borderTop: `1px solid ${T.border}`, borderBottom: `1px solid ${T.border}`, padding: "36px 0", overflow: "hidden" }}>
-        <p style={{ textAlign: "center", fontSize: 10.5, fontWeight: 600, letterSpacing: "0.14em", textTransform: "uppercase", color: T.ghost, marginBottom: 24, ...ss }}>Trusted by growing brands</p>
-        <div style={{ position: "relative" }}>
-          <div style={{ position: "absolute", inset: "0 auto 0 0", width: 80, background: `linear-gradient(to right, ${T.bg}, transparent)`, zIndex: 1 }} />
-          <div style={{ position: "absolute", inset: "0 0 0 auto", width: 80, background: `linear-gradient(to left, ${T.bg}, transparent)`, zIndex: 1 }} />
-          <m.div animate={{ x: ["0%","-50%"] }} transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
-            style={{ display: "flex", gap: 52, whiteSpace: "nowrap" }}>
-            {[...LOGOS,...LOGOS].map((l,i) => <span key={i} style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: T.ghost, ...ss }}>{l}</span>)}
-          </m.div>
-        </div>
+      <div style={{
+        background: T.bg,
+        borderTop: `1px solid ${T.border}`,
+        borderBottom: `1px solid ${T.border}`,
+        padding: "36px 0",
+      }}>
+        <p style={{ textAlign: "center", fontSize: 10.5, fontWeight: 600, letterSpacing: "0.14em", textTransform: "uppercase", color: T.ghost, marginBottom: 24, ...ss }}>
+          Trusted by growing brands
+        </p>
+        {/* ✅ FIX: extracted into <LogoMarquee> with correct animation */}
+        <LogoMarquee T={T} />
       </div>
 
       {/* ── SERVICES TEASER ── */}

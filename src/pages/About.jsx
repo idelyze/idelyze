@@ -5,22 +5,22 @@ import { Ic, ss, sd } from "../theme";
 import { Reveal, Eyebrow, SectionHead, PageHero, PrimaryBtn, GhostBtn, ease } from "../components/Primitives";
 
 const VALUES = [
-  { icon: "Target", title: "Purpose before pixels",    desc: "Every design decision starts with a question: does this serve the user and the business goal? If the answer is no, we cut it." },
+  { icon: "Target", title: "Purpose before pixels",       desc: "Every design decision starts with a question: does this serve the user and the business goal? If the answer is no, we cut it." },
   { icon: "Heart",  title: "Invested, not transactional", desc: "We treat every project as if it were our own business. Your success is our portfolio — so we care deeply about outcomes, not just deliverables." },
-  { icon: "Award",  title: "Craft over speed",          desc: "We don't rush quality. We take the time to get it right — because a website or brand that truly works pays for itself many times over." },
-  { icon: "Users",  title: "Honest partnerships",       desc: "We tell you what you need to hear, not what's easiest to say. No overselling, no hidden upsells — just honest recommendations for your situation." },
+  { icon: "Award",  title: "Craft over speed",            desc: "We don't rush quality. We take the time to get it right — because a website or brand that truly works pays for itself many times over." },
+  { icon: "Users",  title: "Honest partnerships",         desc: "We tell you what you need to hear, not what's easiest to say. No overselling, no hidden upsells — just honest recommendations for your situation." },
 ];
 
 const TIMELINE = [
-  { year: "2023", title: "Idelyze is founded", desc: "Started as a small creative studio with a single mission: bring agency-quality design to growing businesses at honest prices." },
-  { year: "2023", title: "First 5 brands launched", desc: "Shop24Hours, Ubika Preschool, and our earliest clients trusted us to build their digital presence. 100% delivered on brief." },
+  { year: "2023", title: "Idelyze is founded",           desc: "Started as a small creative studio with a single mission: bring agency-quality design to growing businesses at honest prices." },
+  { year: "2023", title: "First 5 brands launched",      desc: "Shop24Hours, Ubika Preschool, and our earliest clients trusted us to build their digital presence. 100% delivered on brief." },
   { year: "2024", title: "Expanded to full digital systems", desc: "Grew from design-only to offering end-to-end digital services — web development, SEO, social media, and strategy under one roof." },
-  { year: "2025", title: "20+ brands and counting", desc: "A growing portfolio of businesses we've helped stand out, scale up, and show up consistently across every digital channel." },
+  { year: "2025", title: "20+ brands and counting",      desc: "A growing portfolio of businesses we've helped stand out, scale up, and show up consistently across every digital channel." },
 ];
 
 export default function About() {
   const { T, dark } = useTheme();
-  const lineRef  = useRef(null);
+  const lineRef    = useRef(null);
   const lineInView = useInView(lineRef, { once: true });
 
   return (
@@ -54,10 +54,10 @@ export default function About() {
             <Reveal delay={0.15}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
                 {[
-                  { num: "20+",  label: "Brands launched",         color: T.accent },
-                  { num: "3yr",  label: "Years of experience",      color: T.green  },
-                  { num: "100%", label: "On-brief delivery rate",   color: T.blue   },
-                  { num: "24h",  label: "Average response time",    color: T.amber  },
+                  { num: "20+",  label: "Brands launched",       color: T.accent },
+                  { num: "3yr",  label: "Years of experience",    color: T.green  },
+                  { num: "100%", label: "On-brief delivery rate", color: T.blue   },
+                  { num: "24h",  label: "Average response time",  color: T.amber  },
                 ].map(s => (
                   <div key={s.label} style={{ borderRadius: 16, padding: "24px 22px", background: T.bg, border: `1px solid ${T.border}`, boxShadow: T.cardShadow }}>
                     <div style={{ fontSize: "2rem", fontWeight: 800, letterSpacing: "-0.04em", color: s.color, lineHeight: 1, marginBottom: 8, ...sd }}>{s.num}</div>
@@ -74,17 +74,32 @@ export default function About() {
       <section style={{ background: T.bg, padding: "96px 0" }}>
         <div style={{ maxWidth: 1120, margin: "0 auto", padding: "0 24px" }}>
           <SectionHead T={T} eyebrow="Our Values" title={<>How we think.<br />How we work.</>} sub="These aren't words on a wall. They're the principles behind every decision we make on every project." />
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 14 }}>
+
+          {/* ✅ FIX: stretch ensures all cells in a row share the same height */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 14, alignItems: "stretch" }}>
             {VALUES.map((v, i) => {
               const IcComp = Ic[v.icon];
               return (
-                <Reveal key={v.title} delay={i * 0.08}>
-                  <div style={{ borderRadius: 16, padding: 24, background: T.surface, border: `1px solid ${T.border}`, boxShadow: T.cardShadow }}>
-                    <div style={{ width: 40, height: 40, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", background: T.accentDim, border: `1px solid ${T.accentRing}`, marginBottom: 18 }}>
+                // ✅ FIX: pass height 100% down through Reveal wrapper
+                <Reveal key={v.title} delay={i * 0.08} style={{ height: "100%" }}>
+                  {/* ✅ FIX: flex column + height 100% → desc fills space, all cards bottom-align */}
+                  <div style={{
+                    borderRadius: 16,
+                    padding: 24,
+                    background: T.surface,
+                    border: `1px solid ${T.border}`,
+                    boxShadow: T.cardShadow,
+                    display: "flex",
+                    flexDirection: "column",
+                    height: "100%",
+                    boxSizing: "border-box",
+                  }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", background: T.accentDim, border: `1px solid ${T.accentRing}`, marginBottom: 18, flexShrink: 0 }}>
                       <IcComp style={{ width: 16, height: 16, color: T.accent }} sw={1.75} />
                     </div>
                     <h3 style={{ fontSize: 15.5, fontWeight: 700, letterSpacing: "-0.02em", color: T.primary, marginBottom: 10, ...sd }}>{v.title}</h3>
-                    <p style={{ fontSize: 13.5, lineHeight: 1.68, color: T.muted, ...ss }}>{v.desc}</p>
+                    {/* ✅ FIX: flex: 1 absorbs leftover height so cards in same row align */}
+                    <p style={{ fontSize: 13.5, lineHeight: 1.68, color: T.muted, flex: 1, ...ss }}>{v.desc}</p>
                   </div>
                 </Reveal>
               );

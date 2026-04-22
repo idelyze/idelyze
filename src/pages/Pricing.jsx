@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { m, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { useTheme } from "../App";
 import { Ic, ss, sd } from "../theme";
 import { Reveal, SectionHead, PageHero, PrimaryBtn, GhostBtn, ease } from "../components/Primitives";
@@ -16,12 +17,6 @@ function useWindowWidth() {
   }, []);
   return width;
 }
-
-// ─── Breakpoints ─────────────────────────────────────────────────────────────
-// xs  < 480
-// sm  480–639
-// md  640–1023
-// lg  ≥ 1024
 
 const CATALOGUE = [
   {
@@ -81,18 +76,18 @@ const CATALOGUE = [
 ];
 
 // ─── Plan Card ────────────────────────────────────────────────────────────────
-function PlanCard({ plan, accentColor, T, isMobile }) {
+// ✅ FIX: accepts `navigate` as a prop and calls navigate("/contact") directly
+function PlanCard({ plan, accentColor, T, isMobile, navigate }) {
   const isH = plan.highlight;
-  const bg = isH ? accentColor : T.surface;
+  const bg      = isH ? accentColor : T.surface;
   const txtMain = isH ? "#fff" : T.primary;
-  const txtSub = isH ? "rgba(255,255,255,0.78)" : T.secondary;
+  const txtSub  = isH ? "rgba(255,255,255,0.78)" : T.secondary;
   const txtMuted = isH ? "rgba(255,255,255,0.6)" : T.muted;
-  const chkBg = isH ? "rgba(255,255,255,0.2)" : `${accentColor}15`;
-  const chkClr = isH ? "#fff" : accentColor;
+  const chkBg   = isH ? "rgba(255,255,255,0.2)" : `${accentColor}15`;
+  const chkClr  = isH ? "#fff" : accentColor;
 
   return (
     <div style={{
-      // Full-width on mobile, equal columns otherwise
       flex: isMobile ? "1 1 100%" : "1 1 0",
       minWidth: 0,
       borderRadius: 18,
@@ -144,80 +139,65 @@ function PlanCard({ plan, accentColor, T, isMobile }) {
         ))}
       </ul>
 
-      <a
-        href="#"
-        onClick={e => {
-          e.preventDefault();
-          const el = document.getElementById("contact-page");
-          if (el) el.scrollIntoView({ behavior: "smooth" });
-          window.location.hash = "/contact";
-        }}
+      {/* ✅ FIX: use navigate("/contact") — no more hash hacks */}
+      <button
+        onClick={() => navigate("/contact")}
         style={{
           display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
           padding: "12px 18px", borderRadius: 10, fontSize: 13.5, fontWeight: 600,
           textDecoration: "none", transition: "opacity 0.2s", cursor: "pointer",
-          background: isH ? "#fff" : accentColor, color: isH ? accentColor : "#fff", ...ss,
+          background: isH ? "#fff" : accentColor,
+          color: isH ? accentColor : "#fff",
+          border: "none",
+          ...ss,
         }}
         onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
         onMouseLeave={e => e.currentTarget.style.opacity = "1"}
       >
         {plan.price === "Custom" ? "Let's talk" : "Get started"}
         <Ic.ArrowRight style={{ width: 13, height: 13 }} />
-      </a>
+      </button>
     </div>
   );
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function Pricing() {
-  const { T } = useTheme();
+  const { T }  = useTheme();
   const [active, setActive] = useState(0);
-  const width = useWindowWidth();
+  const width  = useWindowWidth();
+  // ✅ FIX: hook up React Router navigate at the top level
+  const navigate = useNavigate();
 
-  const isXs = width < 480;
-  const isSm = width >= 480 && width < 640;
-  const isMobile = width < 640;   // xs + sm  → cards stack
-  const isMd = width >= 640 && width < 1024;
-  const isLg = width >= 1024;
+  const isXs     = width < 480;
+  const isSm     = width >= 480 && width < 640;
+  const isMobile = width < 640;
+  const isMd     = width >= 640 && width < 1024;
+  const isLg     = width >= 1024;
 
   const current = CATALOGUE[active];
-  const IcComp = Ic[current.icon];
+  const IcComp  = Ic[current.icon];
 
-  // Tabs: horizontal scroll on small screens, wrap on desktop
   const tabsStyle = {
     display: "flex",
     flexWrap: isLg ? "wrap" : "nowrap",
     gap: isXs ? 6 : 8,
     justifyContent: isLg ? "center" : "flex-start",
     marginBottom: 40,
-    // Horizontal scroll on mobile/tablet
     overflowX: isLg ? "visible" : "auto",
-    paddingBottom: isLg ? 0 : 6,       // room for scrollbar
-    // Hide scrollbar visually but keep functionality
-    scrollbarWidth: "none",            // Firefox
-    msOverflowStyle: "none",           // IE/Edge
+    paddingBottom: isLg ? 0 : 6,
+    scrollbarWidth: "none",
+    msOverflowStyle: "none",
     WebkitOverflowScrolling: "touch",
     paddingLeft: isLg ? 0 : 2,
     paddingRight: isLg ? 0 : 2,
   };
 
-  // Section vertical padding
-  const sectionPadding = isXs
-    ? "0 0 64px"
-    : isMd
-      ? "0 0 80px"
-      : "0 0 112px";
-
-  // Horizontal page padding
-  const pagePad = isXs ? "0 16px" : isSm ? "0 20px" : "0 24px";
-
-  // Card layout: single column on mobile, 3 cols on desktop,
-  // 2-cols (1 highlighted + 1 per row) on tablet via flexWrap
-  const cardGap = isMobile ? 12 : 14;
-  const cardMaxW = isMobile ? "100%" : isMd ? 680 : 980;
-
-  // Service strip responsive
-  const stripMaxW = isMobile ? "100%" : 680;
+  const sectionPadding = isXs ? "0 0 64px" : isMd ? "0 0 80px" : "0 0 112px";
+  const pagePad        = isXs ? "0 16px" : isSm ? "0 20px" : "0 24px";
+  const cardGap        = isMobile ? 12 : 14;
+  const cardMaxW       = isMobile ? "100%" : isMd ? 680 : 980;
+  const stripMaxW      = isMobile ? "100%" : 680;
 
   return (
     <div style={{ background: T.bg }}>
@@ -235,13 +215,12 @@ export default function Pricing() {
       <section style={{ background: T.bg, padding: sectionPadding }}>
         <div style={{ maxWidth: 1120, margin: "0 auto", padding: pagePad }}>
 
-          {/* ── Service tabs ───────────────────────────────────────────── */}
+          {/* ── Service tabs ── */}
           <Reveal>
-            {/* Wrapper hides the horizontal scrollbar on WebKit */}
             <div style={{ overflow: "hidden", marginBottom: 0 }}>
               <div style={tabsStyle}>
                 {CATALOGUE.map((cat, i) => {
-                  const TabIc = Ic[cat.icon];
+                  const TabIc    = Ic[cat.icon];
                   const isActive = i === active;
                   return (
                     <m.button
@@ -250,10 +229,7 @@ export default function Pricing() {
                       whileHover={{ scale: 1.04 }}
                       whileTap={{ scale: 0.96 }}
                       style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 7,
-                        // Tabs never shrink so they're always readable on scroll
+                        display: "flex", alignItems: "center", gap: 7,
                         flexShrink: 0,
                         padding: isXs ? "8px 13px" : "9px 16px",
                         borderRadius: 50,
@@ -264,9 +240,7 @@ export default function Pricing() {
                         background: isActive ? T.accent : T.surface,
                         color: isActive ? "#fff" : T.muted,
                         border: `1px solid ${isActive ? T.accent : T.border}`,
-                        boxShadow: isActive
-                          ? "0 4px 20px rgba(231,28,24,0.25)"
-                          : T.cardShadow,
+                        boxShadow: isActive ? "0 4px 20px rgba(231,28,24,0.25)" : T.cardShadow,
                         whiteSpace: "nowrap",
                         ...ss,
                       }}
@@ -280,7 +254,7 @@ export default function Pricing() {
             </div>
           </Reveal>
 
-          {/* ── Active service content ──────────────────────────────────── */}
+          {/* ── Active service content ── */}
           <AnimatePresence mode="wait">
             <m.div
               key={active}
@@ -322,28 +296,27 @@ export default function Pricing() {
               <div style={{
                 display: "flex",
                 gap: cardGap,
-                // On mobile: stack vertically; tablet: allow 2-col wrapping; desktop: 3 cols
                 flexDirection: isMobile ? "column" : "row",
                 flexWrap: isMd ? "wrap" : "nowrap",
                 maxWidth: cardMaxW,
                 margin: "0 auto",
               }}>
-                {current.plans.map((plan, idx) => (
+                {current.plans.map((plan) => (
                   <PlanCard
                     key={plan.name}
                     plan={plan}
                     accentColor={current.color}
                     T={T}
                     isMobile={isMobile}
-                    // On tablet (md): highlighted card takes full row, others split row
-                    style={isMd && plan.highlight ? { flex: "1 1 100%" } : undefined}
+                    // navigate={navigate}     pass navigate down 
+                    navigate={navigate} 
                   />
                 ))}
               </div>
             </m.div>
           </AnimatePresence>
 
-          {/* ── Bottom note ─────────────────────────────────────────────── */}
+          {/* ── Bottom note ── */}
           <Reveal delay={0.2}>
             <div style={{
               display: "flex",
