@@ -20,7 +20,7 @@ const COLS = {
 
 const CONNECT = [
   { label: "Instagram", href: "https://www.instagram.com/theidelyze/",                       ic: "Ig"    },
-  { label: "Facebook",  href: "https://www.facebook.com/profile.php?id=61586719824918",      ic: "Fb"    },
+  { label: "Facebook",  href: "https://www.facebook.com/profile.php?id=61586388071280&ref=PROFILE_EDIT_xav_ig_profile_page_web",      ic: "Fb"    },
   { label: "WhatsApp",  href: "https://wa.me/918960685128",                                  ic: "Phone" },
   { label: "Email",     href: "mailto:idelyze.mail@gmail.com",                               ic: "Mail"  },
 ];
